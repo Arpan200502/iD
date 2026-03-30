@@ -628,7 +628,31 @@ export function modeSelect(context, selectedIDs) {
 
             var currentSelectedIds = mode.selectedIDs();
 
-            var childIds = _focusedVertexIds ? _focusedVertexIds.filter(id => context.hasEntity(id)) : childNodeIdsOfSelection(true);
+            var childIds = _focusedVertexIds
+            ? _focusedVertexIds.filter(id => context.hasEntity(id))
+            : childNodeIdsOfSelection(true);
+
+                if (!childIds || !childIds.length) {
+                    const selected = mode.selectedIDs()
+                        .map(id => context.hasEntity(id))
+                        .filter(Boolean);
+
+                    const relationMembers = [];
+
+                    selected.forEach(entity => {
+                        if (entity.type === 'relation') {
+                            entity.members.forEach(m => {
+                                if (context.hasEntity(m.id)) {
+                                    relationMembers.push(m.id);
+                                }
+                            });
+                        }
+                    });
+
+                    if (relationMembers.length) {
+                        childIds = relationMembers;
+                    }
+                }
             if (!childIds || !childIds.length) return;
 
             if (currentSelectedIds.length === 1) _focusedParentWayId = currentSelectedIds[0];
